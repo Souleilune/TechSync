@@ -1,69 +1,188 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { authService } from '../services/authService';
 
-// Create the context
 const AuthContext = createContext();
 
-// Custom hook to use the auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+// Auth reducer
+const authReducer = (state, action) => {
+  switch (action.type) {
+    case 'LOGIN_START':
+      return {
+        ...state,
+        loading: true,
+        error: null
+      };
+    case 'LOGIN_SUCCESS':
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: true,
+        user: action.payload.user,
+        token: action.payload.token,
+        error: null
+      };
+    case 'LOGIN_FAILURE':
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        error: action.payload
+      };
+    case 'LOGOUT':
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        error: null
+      };
+    case 'UPDATE_USER':
+      return {
+        ...state,
+        user: action.payload
+      };
+    case 'CLEAR_ERROR':
+      return {
+        ...state,
+        error: null
+      };
+    default:
+      return state;
   }
-  return context;
 };
 
-// Provider component that wraps your app
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Initial state
+const initialState = {
+  isAuthenticated: false,
+  user: null,
+  token: localStorage.getItem('token'),
+  loading: false,
+  error: null
+};
 
-  // Check if user is already logged in when app starts
+// Auth Provider
+export const AuthProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, initialState);
+
+  // Check if user is logged in on app start
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetchUser();
-    } else {
-      setLoading(false);
+      validateToken(token);
     }
   }, []);
 
-  // Get user data from backend
-  const fetchUser = async () => {
+  // Validate token and get user profile
+  const validateToken = async (token) => {
     try {
-      const response = await api.get('/auth/me');
-      setUser(response.data.user);
+      dispatch({ type: 'LOGIN_START' });
+      const response = await authService.getProfile(token);
+      
+      if (response.success) {
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: {
+            user: response.data.user,
+            token
+          }
+        });
+      } else {
+        localStorage.removeItem('token');
+        dispatch({ type: 'LOGIN_FAILURE', payload: 'Invalid token' });
+      }
     } catch (error) {
       localStorage.removeItem('token');
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'LOGIN_FAILURE', payload: 'Token validation failed' });
     }
   };
 
   // Login function
-  const login = async (email, password) => {
+  const login = async (credentials) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
-      return { success: true };
+      dispatch({ type: 'LOGIN_START' });
+      
+      const response = await authService.login(credentials);
+      
+      if (response.success) {
+        localStorage.setItem('token', response.data.token);
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: response.data
+        });
+        return { success: true };
+      } else {
+        dispatch({ type: 'LOGIN_FAILURE', payload: response.message });
+        return { success: false, message: response.message };
+      }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message };
+      const message = error.response?.data?.message || 'Login failed';
+      dispatch({ type: 'LOGIN_FAILURE', payload: message });
+      return { success: false, message };
+    }
+  };
+
+  // Register function
+  const register = async (userData) => {
+    try {
+      dispatch({ type: 'LOGIN_START' });
+      
+      const response = await authService.register(userData);
+      
+      if (response.success) {
+        localStorage.setItem('token', response.data.token);
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: response.data
+        });
+        return { success: true };
+      } else {
+        dispatch({ type: 'LOGIN_FAILURE', payload: response.message });
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Registration failed';
+      dispatch({ type: 'LOGIN_FAILURE', payload: message });
+      return { success: false, message };
     }
   };
 
   // Logout function
   const logout = () => {
     localStorage.removeItem('token');
-    setUser(null);
+    dispatch({ type: 'LOGOUT' });
+  };
+
+  // Update user profile
+  const updateProfile = async (userData) => {
+    try {
+      const response = await authService.updateProfile(userData, state.token);
+      
+      if (response.success) {
+        dispatch({ type: 'UPDATE_USER', payload: response.data.user });
+        return { success: true };
+      } else {
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Profile update failed';
+      return { success: false, message };
+    }
+  };
+
+  // Clear error
+  const clearError = () => {
+    dispatch({ type: 'CLEAR_ERROR' });
   };
 
   const value = {
-    user,      // Current logged-in user
-    login,     // Function to log in
-    logout,    // Function to log out
-    loading    // Whether we're still checking login status
+    ...state,
+    login,
+    register,
+    logout,
+    updateProfile,
+    clearError
   };
 
   return (
@@ -71,4 +190,13 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+// Hook to use auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

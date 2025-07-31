@@ -1,0 +1,107 @@
+backend/
+│
+├── 📁 config/
+│   ├── supabase.js              # Supabase client configuration
+│   ├── gemini.js                # Gemini AI configuration
+│   ├── database.js              # Database connection settings
+│   └── cors.js                  # CORS configuration
+│
+├── 📁 controllers/
+│   ├── authController.js        # Authentication logic (login, register, JWT)
+│   ├── userController.js        # User profile management
+│   ├── projectController.js     # Project CRUD operations
+│   ├── challengeController.js   # Coding challenges management
+│   ├── taskController.js        # Project tasks operations
+│   ├── chatController.js        # Chat and messaging
+│   ├── fileController.js        # File upload/download handling
+│   ├── recommendationController.js  # AI-powered project recommendations
+│   └── analyticsController.js   # User activity and analytics
+│
+├── 📁 middleware/
+│   ├── auth.js                  # JWT authentication middleware
+│   ├── validation.js            # Request validation schemas
+│   ├── errorHandler.js          # Global error handling
+│   ├── rateLimiter.js          # API rate limiting
+│   ├── fileUpload.js           # File upload validation
+│   └── logger.js               # Request logging middleware
+│
+├── 📁 routes/
+│   ├── index.js                # Main router setup
+│   ├── auth.js                 # Authentication routes
+│   ├── users.js                # User management routes
+│   ├── projects.js             # Project-related routes
+│   ├── challenges.js           # Coding challenge routes
+│   ├── tasks.js                # Task management routes
+│   ├── chat.js                 # Chat and messaging routes
+│   ├── files.js                # File management routes
+│   ├── recommendations.js      # Project recommendation routes
+│   └── analytics.js            # Analytics and reporting routes
+│
+├── 📁 utils/
+│   ├── skillMatching.js        # Core skill matching algorithm
+│   ├── geminiIntegration.js    # Gemini AI service integration
+│   ├── codeEvaluator.js        # Automated code review logic
+│   ├── emailService.js         # Email notifications
+│   ├── githubIntegration.js    # GitHub OAuth and file sync
+│   ├── validators.js           # Custom validation functions
+│   ├── helpers.js              # General utility functions
+│   └── constants.js            # Application constants
+│
+├── 📁 services/
+│   ├── userService.js          # User business logic
+│   ├── projectService.js       # Project business logic
+│   ├── challengeService.js     # Challenge business logic
+│   ├── recommendationService.js # AI recommendation logic
+│   ├── notificationService.js  # Notification system
+│   └── analyticsService.js     # Analytics and tracking
+│
+├── 📁 models/
+│   ├── User.js                 # User data model and methods
+│   ├── Project.js              # Project data model
+│   ├── Challenge.js            # Challenge data model
+│   ├── Task.js                 # Task data model
+│   └── Recommendation.js       # Recommendation data model
+│
+├── 📁 schemas/
+│   ├── userSchemas.js          # User validation schemas (Joi)
+│   ├── projectSchemas.js       # Project validation schemas
+│   ├── challengeSchemas.js     # Challenge validation schemas
+│   └── taskSchemas.js          # Task validation schemas
+│
+├── 📁 tests/
+│   ├── unit/
+│   │   ├── controllers/        # Controller unit tests
+│   │   ├── utils/              # Utility function tests
+│   │   └── services/           # Service layer tests
+│   ├── integration/
+│   │   ├── auth.test.js        # Authentication integration tests
+│   │   ├── projects.test.js    # Project API tests
+│   │   └── challenges.test.js  # Challenge API tests
+│   └── fixtures/
+│       └── testData.js         # Test data fixtures
+│
+├── 📁 uploads/                 # Temporary file uploads (if not using cloud storage)
+│   ├── profiles/               # Profile pictures
+│   ├── projects/               # Project files
+│   └── submissions/            # Code submissions
+│
+├── 📁 logs/                    # Application logs
+│   ├── error.log               # Error logs
+│   ├── combined.log            # All logs
+│   └── access.log              # Request access logs
+│
+├── 📁 docs/                    # API documentation
+│   ├── api.md                  # API endpoints documentation
+│   ├── setup.md                # Setup instructions
+│   └── deployment.md           # Deployment guide
+│
+├── 📄 app.js                   # Express application setup
+├── 📄 server.js                # Server entry point
+├── 📄 package.json             # Dependencies and scripts
+├── 📄 package-lock.json        # Dependency lock file
+├── 📄 .env                     # Environment variables
+├── 📄 .env.example             # Environment template
+├── 📄 .gitignore               # Git ignore rules
+├── 📄 README.md                # Project documentation
+├── 📄 jest.config.js           # Jest testing configuration
+└── 📄 nodemon.json             # Nodemon configuration

@@ -151,22 +151,26 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     localStorage.removeItem('token');
+    authService.logout();
     dispatch({ type: 'LOGOUT' });
   };
 
   // Update user profile
-  const updateProfile = async (userData) => {
+  const updateUser = async (userData) => {
     try {
       const response = await authService.updateProfile(userData, state.token);
       
       if (response.success) {
-        dispatch({ type: 'UPDATE_USER', payload: response.data.user });
+        dispatch({
+          type: 'UPDATE_USER',
+          payload: response.data.user
+        });
         return { success: true };
       } else {
         return { success: false, message: response.message };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Profile update failed';
+      const message = error.response?.data?.message || 'Update failed';
       return { success: false, message };
     }
   };
@@ -181,7 +185,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateProfile,
+    updateUser,
     clearError
   };
 
@@ -192,7 +196,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook to use auth context
+// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

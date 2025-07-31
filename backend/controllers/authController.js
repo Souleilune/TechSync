@@ -12,6 +12,8 @@ const generateToken = (userId) => {
 // Register user
 const register = async (req, res) => {
   try {
+    console.log('Registration request received:', req.body);
+    
     const { username, email, password, full_name, bio, github_username, linkedin_url, years_experience } = req.body;
 
     // Check if user already exists
@@ -22,6 +24,7 @@ const register = async (req, res) => {
       .single();
 
     if (existingUser) {
+      console.log('User already exists');
       return res.status(400).json({
         success: false,
         message: 'User with this username or email already exists'
@@ -31,6 +34,7 @@ const register = async (req, res) => {
     // Hash password
     const saltRounds = 12;
     const password_hash = await bcrypt.hash(password, saltRounds);
+    console.log('Password hashed successfully');
 
     // Create user in database
     const { data: user, error } = await supabase
@@ -52,9 +56,12 @@ const register = async (req, res) => {
       console.error('Database error:', error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to create user account'
+        message: 'Failed to create user account',
+        error: error.message
       });
     }
+
+    console.log('User created successfully:', user);
 
     // Generate JWT token
     const token = generateToken(user.id);
@@ -72,7 +79,8 @@ const register = async (req, res) => {
     console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };
@@ -80,6 +88,8 @@ const register = async (req, res) => {
 // Login user
 const login = async (req, res) => {
   try {
+    console.log('Login request received:', req.body);
+    
     const { identifier, password } = req.body; // identifier can be username or email
 
     // Find user by username or email
@@ -91,6 +101,7 @@ const login = async (req, res) => {
       .single();
 
     if (error || !user) {
+      console.log('User not found or inactive');
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -101,11 +112,14 @@ const login = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     
     if (!isPasswordValid) {
+      console.log('Invalid password');
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
+
+    console.log('User authenticated successfully');
 
     // Generate JWT token
     const token = generateToken(user.id);
@@ -126,19 +140,20 @@ const login = async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };
 
-// Get current user profile
+// Get user profile
 const getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, username, email, full_name, bio, github_username, linkedin_url, avatar_url, years_experience, created_at, updated_at')
+      .select('id, username, email, full_name, bio, github_username, linkedin_url, years_experience, created_at, updated_at')
       .eq('id', userId)
       .eq('is_active', true)
       .single();
@@ -152,7 +167,9 @@ const getProfile = async (req, res) => {
 
     res.json({
       success: true,
-      data: { user }
+      data: {
+        user
+      }
     });
 
   } catch (error) {
@@ -170,6 +187,7 @@ const updateProfile = async (req, res) => {
     const userId = req.user.id;
     const { full_name, bio, github_username, linkedin_url, years_experience } = req.body;
 
+    // Update user profile
     const { data: user, error } = await supabase
       .from('users')
       .update({
@@ -181,7 +199,7 @@ const updateProfile = async (req, res) => {
         updated_at: new Date().toISOString()
       })
       .eq('id', userId)
-      .select('id, username, email, full_name, bio, github_username, linkedin_url, avatar_url, years_experience, updated_at')
+      .select('id, username, email, full_name, bio, github_username, linkedin_url, years_experience, created_at, updated_at')
       .single();
 
     if (error) {
@@ -194,7 +212,9 @@ const updateProfile = async (req, res) => {
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: { user }
+      data: {
+        user
+      }
     });
 
   } catch (error) {

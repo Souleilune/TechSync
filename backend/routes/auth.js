@@ -17,7 +17,7 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-// Register validation rules
+// Register validation rules - Updated to match your database schema
 const registerValidation = [
   body('username')
     .isLength({ min: 3, max: 50 })
@@ -28,6 +28,8 @@ const registerValidation = [
   body('email')
     .isEmail()
     .withMessage('Please provide a valid email')
+    .isLength({ max: 255 })
+    .withMessage('Email must be less than 255 characters')
     .normalizeEmail(),
   
   body('password')
@@ -37,14 +39,35 @@ const registerValidation = [
     .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
   
   body('full_name')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Full name must be between 2 and 100 characters')
+    .isLength({ min: 2, max: 255 })
+    .withMessage('Full name must be between 2 and 255 characters')
     .trim(),
+  
+  body('bio')
+    .optional()
+    .isLength({ max: 1000 })
+    .withMessage('Bio must be less than 1000 characters')
+    .trim(),
+  
+  body('github_username')
+    .optional()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('GitHub username must be between 1 and 100 characters')
+    .matches(/^[a-zA-Z0-9\-]+$/)
+    .withMessage('GitHub username can only contain letters, numbers, and hyphens'),
+  
+  body('linkedin_url')
+    .optional()
+    .isLength({ max: 255 })
+    .withMessage('LinkedIn URL must be less than 255 characters')
+    .isURL()
+    .withMessage('LinkedIn URL must be a valid URL'),
   
   body('years_experience')
     .optional()
-    .isInt({ min: 0, max: 50 })
-    .withMessage('Years of experience must be between 0 and 50')
+    .isInt({ min: 0 })
+    .withMessage('Years of experience must be 0 or greater')
+    .toInt()
 ];
 
 // Login validation rules
@@ -62,19 +85,35 @@ const loginValidation = [
 const updateProfileValidation = [
   body('full_name')
     .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Full name must be between 2 and 100 characters')
+    .isLength({ min: 2, max: 255 })
+    .withMessage('Full name must be between 2 and 255 characters')
     .trim(),
   
   body('bio')
     .optional()
-    .isLength({ max: 500 })
-    .withMessage('Bio must be less than 500 characters'),
+    .isLength({ max: 1000 })
+    .withMessage('Bio must be less than 1000 characters')
+    .trim(),
+  
+  body('github_username')
+    .optional()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('GitHub username must be between 1 and 100 characters')
+    .matches(/^[a-zA-Z0-9\-]+$/)
+    .withMessage('GitHub username can only contain letters, numbers, and hyphens'),
+  
+  body('linkedin_url')
+    .optional()
+    .isLength({ max: 255 })
+    .withMessage('LinkedIn URL must be less than 255 characters')
+    .isURL()
+    .withMessage('LinkedIn URL must be a valid URL'),
   
   body('years_experience')
     .optional()
-    .isInt({ min: 0, max: 50 })
-    .withMessage('Years of experience must be between 0 and 50')
+    .isInt({ min: 0 })
+    .withMessage('Years of experience must be 0 or greater')
+    .toInt()
 ];
 
 // Change password validation rules

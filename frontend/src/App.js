@@ -1,7 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
+import ProtectedRoute, { AuthRoute } from './components/ProtectedRoute';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -9,14 +11,28 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={
-              <div>
-                <h1>Welcome to the Coding Platform</h1>
-                <p>You need to be logged in to see this page.</p>
-                <a href="/login">Go to Login</a>
-              </div>
-            } />
+            {/* Auth Routes - redirect to dashboard if already logged in */}
+            <Route 
+              path="/login" 
+              element={
+                <AuthRoute>
+                  <Login />
+                </AuthRoute>
+              } 
+            />
+            
+            {/* Protected Routes - require authentication */}
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Redirect any unknown routes to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>

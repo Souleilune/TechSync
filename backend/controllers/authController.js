@@ -12,9 +12,11 @@ const generateToken = (userId) => {
 // Register user
 const register = async (req, res) => {
   try {
-    console.log('Registration request received:', req.body);
+    // Log only safe information (no password)
+    const { password, ...safeRequestData } = req.body;
+    console.log('Registration request received for user:', safeRequestData.username || safeRequestData.email);
     
-    const { username, email, password, full_name, bio, github_username, linkedin_url, years_experience } = req.body;
+    const { username, email, full_name, bio, github_username, linkedin_url, years_experience } = req.body;
 
     // Check if user already exists
     const { data: existingUser } = await supabase
@@ -24,7 +26,7 @@ const register = async (req, res) => {
       .single();
 
     if (existingUser) {
-      console.log('User already exists');
+      console.log('User already exists:', username);
       return res.status(400).json({
         success: false,
         message: 'User with this username or email already exists'
@@ -34,7 +36,7 @@ const register = async (req, res) => {
     // Hash password
     const saltRounds = 12;
     const password_hash = await bcrypt.hash(password, saltRounds);
-    console.log('Password hashed successfully');
+    console.log('Password hashed successfully for user:', username);
 
     // Create user in database
     const { data: user, error } = await supabase
@@ -53,7 +55,7 @@ const register = async (req, res) => {
       .single();
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Database error during registration:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to create user account',
@@ -61,7 +63,7 @@ const register = async (req, res) => {
       });
     }
 
-    console.log('User created successfully:', user);
+    console.log('User created successfully:', user.username);
 
     // Generate JWT token
     const token = generateToken(user.id);
@@ -88,10 +90,10 @@ const register = async (req, res) => {
 // Login user
 const login = async (req, res) => {
   try {
-    console.log('Login request received:', req.body);
+    // Log only the identifier, never the password
+    const { identifier, password } = req.body;
+    console.log('Login attempt for user:', identifier);
     
-    const { identifier, password } = req.body; // identifier can be username or email
-
     // Find user by username or email
     const { data: user, error } = await supabase
       .from('users')
@@ -101,7 +103,7 @@ const login = async (req, res) => {
       .single();
 
     if (error || !user) {
-      console.log('User not found or inactive');
+      console.log('Login failed: User not found or inactive for identifier:', identifier);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -112,14 +114,14 @@ const login = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     
     if (!isPasswordValid) {
-      console.log('Invalid password');
+      console.log('Login failed: Invalid password for user:', identifier);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
-    console.log('User authenticated successfully');
+    console.log('User authenticated successfully:', user.username);
 
     // Generate JWT token
     const token = generateToken(user.id);
@@ -159,6 +161,7 @@ const getProfile = async (req, res) => {
       .single();
 
     if (error || !user) {
+      console.log('Profile fetch failed: User not found for ID:', userId);
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -187,6 +190,8 @@ const updateProfile = async (req, res) => {
     const userId = req.user.id;
     const { full_name, bio, github_username, linkedin_url, years_experience } = req.body;
 
+    console.log('Profile update request for user ID:', userId);
+
     // Update user profile
     const { data: user, error } = await supabase
       .from('users')
@@ -203,11 +208,14 @@ const updateProfile = async (req, res) => {
       .single();
 
     if (error) {
+      console.error('Profile update failed:', error);
       return res.status(400).json({
         success: false,
         message: 'Failed to update profile'
       });
     }
+
+    console.log('Profile updated successfully for user:', user.username);
 
     res.json({
       success: true,
@@ -232,10 +240,12 @@ const changePassword = async (req, res) => {
     const userId = req.user.id;
     const { currentPassword, newPassword } = req.body;
 
+    console.log('Password change request for user ID:', userId);
+
     // Get current user with password
     const { data: user } = await supabase
       .from('users')
-      .select('password_hash')
+      .select('password_hash, username')
       .eq('id', userId)
       .single();
 
@@ -243,6 +253,7 @@ const changePassword = async (req, res) => {
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
     
     if (!isCurrentPasswordValid) {
+      console.log('Password change failed: Current password incorrect for user:', user.username);
       return res.status(400).json({
         success: false,
         message: 'Current password is incorrect'
@@ -263,11 +274,14 @@ const changePassword = async (req, res) => {
       .eq('id', userId);
 
     if (error) {
+      console.error('Password update failed:', error);
       return res.status(400).json({
         success: false,
         message: 'Failed to update password'
       });
     }
+
+    console.log('Password updated successfully for user:', user.username);
 
     res.json({
       success: true,

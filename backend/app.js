@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
-// Import routes
+// import routes
 const authRoutes = require('./routes/auth');
 
 // Import middleware

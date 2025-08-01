@@ -36,7 +36,8 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         user: null,
         token: null,
-        error: null
+        error: null,
+        loading: false
       };
     case 'UPDATE_USER':
       return {
@@ -71,6 +72,9 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       validateToken(token);
+    } else {
+      // If no token, set loading to false
+      dispatch({ type: 'LOGIN_FAILURE', payload: null });
     }
   }, []);
 
@@ -93,6 +97,7 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: 'LOGIN_FAILURE', payload: 'Invalid token' });
       }
     } catch (error) {
+      console.error('Token validation error:', error);
       localStorage.removeItem('token');
       dispatch({ type: 'LOGIN_FAILURE', payload: 'Token validation failed' });
     }
@@ -117,6 +122,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: response.message };
       }
     } catch (error) {
+      console.error('Login error:', error);
       const message = error.response?.data?.message || 'Login failed';
       dispatch({ type: 'LOGIN_FAILURE', payload: message });
       return { success: false, message };
@@ -142,6 +148,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: response.message };
       }
     } catch (error) {
+      console.error('Registration error:', error);
       const message = error.response?.data?.message || 'Registration failed';
       dispatch({ type: 'LOGIN_FAILURE', payload: message });
       return { success: false, message };

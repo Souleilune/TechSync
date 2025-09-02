@@ -13,7 +13,7 @@ const {
   getUserAttempts,
   getUserStats,
   getAttemptDetails,
-  getNextChallenge              // NEW
+  getNextChallenge              
 } = require('../controllers/challengeController');
 
 const {

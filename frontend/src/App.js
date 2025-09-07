@@ -18,6 +18,7 @@ import ProjectJoinPage from './pages/ProjectJoinPage';
 import TaskDetail from './pages/project/TaskDetail';
 import GitHubOAuthCallback from './components/GitHubOAuthCallback';
 import { projectService } from './services/projectService';
+import AdminAnalytics from './pages/AdminAnalytics';
 
 // Regular Project workspace components
 import ProjectDashboard from './pages/project/ProjectDashboard';
@@ -467,6 +468,8 @@ function App() {
                   } 
                 />
 
+                
+
                 {/* Admin Routes */}
                 <Route 
                   path="/admin/dashboard" 
@@ -485,6 +488,17 @@ function App() {
                     <ProtectedRoute>
                       <Layout>
                         <ManageUsers />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+
+                <Route 
+                  path="/admin/analytics" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <AdminAnalytics />
                       </Layout>
                     </ProtectedRoute>
                   } 

@@ -21,7 +21,8 @@ function Sidebar() {
   const adminNavItems = user?.role === 'admin' || user?.role === 'moderator' ? [
     { id: 'challenges', label: 'Challenges', path: '/challenges', icon: '🧩' },
     ...(user?.role === 'admin' ? [
-      { id: 'manage-users', label: 'Manage Users', path: '/admin/users', icon: '👥' }
+      { id: 'manage-users', label: 'Manage Users', path: '/admin/users', icon: '👥' },
+      { id: 'analytics', label: 'Security Analytics', path: '/admin/analytics', icon: '🛡️' }
     ] : []),
     { id: 'admin', label: 'Admin Panel', path: '/admin', icon: '🛡️' }
   ] : [];
@@ -37,26 +38,34 @@ function Sidebar() {
 
   // FIXED: Improved path matching logic
   const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
-    
-    // Special handling for admin routes to prevent overlap
-    if (path === '/admin' && location.pathname === '/admin/users') {
-      return false; // Don't highlight admin panel when on manage users
-    }
-    
-    if (path === '/admin/users') {
-      return location.pathname === '/admin/users' || location.pathname.startsWith('/admin/users/');
-    }
-    
-    // For other paths, use startsWith but be more specific
-    if (path === '/admin') {
-      return location.pathname === '/admin' || (location.pathname.startsWith('/admin') && !location.pathname.startsWith('/admin/users'));
-    }
-    
-    return location.pathname.startsWith(path);
-  };
+  if (path === '/') {
+    return location.pathname === '/';
+  }
+  
+  // Special handling for admin routes to prevent overlap
+  if (path === '/admin' && (location.pathname === '/admin/users' || location.pathname === '/admin/analytics')) {
+    return false; // Don't highlight admin panel when on manage users OR analytics
+  }
+  
+  if (path === '/admin/users') {
+    return location.pathname === '/admin/users' || location.pathname.startsWith('/admin/users/');
+  }
+
+  if (path === '/admin/analytics') {
+    return location.pathname === '/admin/analytics' || location.pathname.startsWith('/admin/analytics/');
+  }
+  
+  // For other paths, use startsWith but be more specific
+  if (path === '/admin') {
+    return location.pathname === '/admin' || (
+      location.pathname.startsWith('/admin') && 
+      !location.pathname.startsWith('/admin/users') && 
+      !location.pathname.startsWith('/admin/analytics')
+    );
+  }
+  
+  return location.pathname.startsWith(path);
+};
 
   const handleThreeDotsClick = (e) => {
     e.stopPropagation();

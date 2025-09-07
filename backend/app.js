@@ -30,6 +30,8 @@ const friendsRoutes = require('./routes/friends');
 // ✅ NEW: Import solo project routes
 const soloProjectRoutes = require('./routes/soloProjectRoutes');
 
+const analyticsRoutes = require('./routes/analytics');
+
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 
@@ -149,6 +151,7 @@ app.use('/api/friends', friendsRoutes);
 
 // ✅ NEW: Solo project routes (add this line)
 app.use('/api/solo-projects', soloProjectRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 2. Project-nested routes - FIXED: Mount under /api/projects
 // These routes handle: /api/projects/:projectId/tasks/* and /api/projects/:projectId/members/*

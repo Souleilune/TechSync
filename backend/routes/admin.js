@@ -5,6 +5,7 @@ const { body, param, query, validationResult } = require('express-validator');
 const AnalyticsService = require('../services/analyticsService');
 const { DataSeeder } = require('../scripts/seedConfusionMatrixData');
 const { ConfusionMatrixTester } = require('../scripts/testConfusionMatrix');
+const analyticsRoutes = require('./analytics');
 
 // Import controllers and middleware
 const {
